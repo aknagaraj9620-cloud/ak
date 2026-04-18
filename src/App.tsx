@@ -32,7 +32,13 @@ import {
 import { GoogleGenAI } from "@google/genai";
 
 // --- AI SETUP ---
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiClient: GoogleGenAI | null = null;
+const getAi = () => {
+  if (!aiClient) {
+    aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+  }
+  return aiClient;
+};
 
 // --- TYPES ---
 type View = 'home' | 'movies' | 'show' | 'seat' | 'payment' | 'ticket' | 'profile' | 'login' | 'scout';
@@ -255,6 +261,7 @@ function ScoutView({ onSelectMovie }: { onSelectMovie: (id: string) => void }) {
     setIsTyping(true);
 
     try {
+      const ai = getAi();
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [...messages.map(m => ({ role: m.role, parts: [{ text: m.text }] })), { role: 'user', parts: [{ text: userMsg }]}],
