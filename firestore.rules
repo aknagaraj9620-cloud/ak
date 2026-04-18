@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. GLOBAL SAFETY NET
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- PRIMITIVES & HELPERS ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isEmailVerified() { return request.auth.token.email_verified == true; }
+    
+    // --- COLLECTION RULES ---
+
+    // 1. USERS
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'name']) 
+        && data.uid is string 
+        && data.email is string 
+        && data.name is string 
+        && data.name.size() <= 100
+        && data.uid == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidUser(incoming());
+    }
+
+    // 2. MOVIES
+    match /movies/{movieId} {
+      allow read: if true;
+      allow write: if false; // Admin only (not implemented in client rules)
+    }
+
+    // 3. SHOWS
+    match /shows/{showId} {
+      allow read: if true;
+      allow write: if false; // Admin only
+    }
+
+    // 4. SEATS (Subcollection of Shows)
+    function isValidSeatUpdate(inc, ext) {
+      return inc.diff(ext).affectedKeys().hasOnly(['status', 'lockedBy', 'lockedUntil', 'userId'])
+        && (
+          // Action: LOCK
+          (ext.status == 'available' && inc.status == 'locked' && inc.lockedBy == request.auth.uid) ||
+          // Action: RELEASE (by owner)
+          (ext.status == 'locked' && ext.lockedBy == request.auth.uid && inc.status == 'available') ||
+          // Action: BOOK (atomic check needed in real app, simplified here)
+          (ext.status == 'locked' && ext.lockedBy == request.auth.uid && inc.status == 'booked' && inc.userId == request.auth.uid)
+        );
+    }
+
+    match /shows/{showId}/seats/{seatId} {
+      allow read: if true;
+      allow update: if isSignedIn() && isValidSeatUpdate(incoming(), existing());
+    }
+
+    // 5. BOOKINGS
+    function isValidBooking(data) {
+      return data.keys().hasAll(['userId', 'showId', 'pnr', 'seats', 'totalPrice', 'status'])
+        && data.userId == request.auth.uid
+        && data.seats is list 
+        && data.seats.size() > 0 
+        && data.totalPrice is number
+        && data.status == 'confirmed';
+    }
+
+    match /bookings/{bookingId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidBooking(incoming());
+    }
+  }
+}

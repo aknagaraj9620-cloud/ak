@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AK RAILWAYS | COMMAND CENTER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            color: #CFCFCF;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        .gold-border { border-color: rgba(255, 215, 0, 0.2); }
+        .rail-card {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2rem;
+            padding: 1.5rem;
+        }
+        .rail-btn {
+            background: #FFD700;
+            color: #050505;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 1rem;
+            border-radius: 1.5rem;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        .rail-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1rem;
+            width: 100%;
+            color: white;
+            outline: none;
+        }
+        .rail-input:focus { border-color: rgba(255, 215, 0, 0.5); }
+        .glass-nav {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="max-w-lg mx-auto relative h-screen">
+
+    <!-- Screen Container -->
+    <div id="app" class="h-full overflow-y-auto no-scrollbar pb-32 pt-12 px-6">
+        <!-- Views will be injected here -->
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-lg mx-auto glass-nav flex justify-around p-4 rounded-t-[32px] z-50">
+        <button onclick="router.navigate('/')" class="flex flex-col items-center gap-1 opacity-40 hover:opacity-100" id="nav-home">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span class="text-[8px] font-black uppercase">Home</span>
+        </button>
+        <button onclick="router.navigate('/profile')" class="flex flex-col items-center gap-1 opacity-40 hover:opacity-100" id="nav-profile">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            <span class="text-[8px] font-black uppercase">Profile</span>
+        </button>
+    </nav>
+
+    <script>
+        // --- Core Engine ---
+        const state = {
+            view: '/',
+            from: { code: 'TPTY', name: 'Tirupati' },
+            to: { code: 'RU', name: 'Renigunta' },
+            passengers: 1,
+            passengerDetails: [{ name: '', age: '', gender: 'M', aadhar: '' }],
+            selectedTrain: null,
+            user: JSON.parse(localStorage.getItem('user')) || { name: 'COMMANDER SEVEN', uid: '777' },
+            authTab: 'login'
+        };
+
+        const router = {
+            navigate(path) {
+                state.view = path;
+                render();
+            }
+        };
+
+        function render() {
+            const app = document.getElementById('app');
+            const path = state.view;
+
+            if (path === '/') renderHome(app);
+            else if (path === '/trains') renderTrains(app);
+            else if (path === '/booking') renderBooking(app);
+            else if (path === '/payment') renderPayment(app);
+            else if (path === '/ticket') renderTicket(app);
+            else if (path === '/profile') renderProfile(app);
+            else if (path === '/signup') renderSignup(app);
+        }
+
+        // --- Renderers ---
+
+        function renderHome(app) {
+            app.innerHTML = `
+                <div class="space-y-12">
+                    <header class="text-center">
+                        <h1 class="text-5xl font-black italic text-yellow-500 tracking-tighter">AK RAILWAYS</h1>
+                        <p class="text-[10px] uppercase tracking-[0.4em] opacity-30">Deployment Grid</p>
+                    </header>
+                    <div class="rail-card space-y-10 shadow-2xl">
+                        <div class="space-y-4">
+                            <input id="home-from" class="rail-input text-xl font-black uppercase" placeholder="FROM" value="${state.from.name}">
+                            <div class="flex justify-center -my-8 relative z-10">
+                                <button onclick="swapHome()" class="w-12 h-12 bg-black border border-white/10 rounded-2xl flex items-center justify-center text-yellow-500 hover:rotate-180 transition-all duration-500">⇄</button>
+                            </div>
+                            <input id="home-to" class="rail-input text-xl font-black uppercase" placeholder="TO" value="${state.to.name}">
+                        </div>
+                        <button onclick="router.navigate('/trains')" class="rail-btn shadow-xl shadow-yellow-500/20">Find Train</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTrains(app) {
+            app.innerHTML = `
+                <div class="space-y-8 animate-in slide-in-from-right duration-500">
+                    <div class="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest">
+                        <button onclick="router.navigate('/')" class="opacity-50">← BACK</button>
+                        <span class="opacity-20">|</span>
+                        <span>Search results</span>
+                        <span>All Dates</span>
+                        <span class="text-yellow-500">SL-sleeper</span>
+                        <span class="opacity-50">sort by</span>
+                    </div>
+
+                    <div class="text-center py-4 border-y border-white/5 mx-2">
+                        <p class="text-sm font-black italic uppercase">${state.from.code} - ${state.from.name} ➔ ${state.to.code} - ${state.to.name}</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        ${[1, 2, 3].map(i => `
+                            <div onclick="goToBooking('${12345 + i}', 'Express ${i}')" class="rail-card !p-8 space-y-6 hover:border-yellow-500/30 transition-all active:scale-95 cursor-pointer bg-white/[0.02]">
+                                <div class="flex justify-between items-start">
+                                    <div class="space-y-1">
+                                        <p class="text-2xl font-black italic tracking-tight">16354 <span class="text-xs opacity-30 mx-2">|</span> 12:35 AM-0h25m-1:00 AM</p>
+                                        <h3 class="text-sm font-black text-yellow-500 uppercase tracking-widest">Kacheguda Weekly Express</h3>
+                                    </div>
+                                    <p class="text-2xl font-black">₹300</p>
+                                </div>
+                                <div class="flex justify-between items-end border-t border-white/5 pt-6">
+                                    <div class="flex gap-2 text-[10px] font-black opacity-30 tracking-widest italic">
+                                        <span class="text-yellow-500">S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                                    </div>
+                                    <p class="text-[9px] font-bold text-red-500 uppercase animate-pulse">Not running today</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderBooking(app) {
+            app.innerHTML = `
+                <div class="space-y-10 animate-in slide-in-from-right duration-500">
+                    <header class="space-y-2">
+                        <button onclick="router.navigate('/trains')" class="text-[10px] font-bold uppercase opacity-30">← REVISE TRAIN</button>
+                        <h2 class="text-2xl font-black italic uppercase">${state.from.name} ➔ ${state.to.name}</h2>
+                    </header>
+
+                    <div class="rail-card space-y-4">
+                        <label class="text-[10px] font-black uppercase opacity-40">No. of Passengers</label>
+                        <input type="number" value="${state.passengers}" onchange="updatePaxCount(this.value)" class="rail-input text-xl font-black">
+                    </div>
+
+                    <div class="space-y-6">
+                        ${Array.from({length: state.passengers}).map((_, i) => `
+                            <div class="rail-card space-y-6 relative border-yellow-500/10">
+                                <span class="absolute -left-2 top-8 w-5 h-8 bg-yellow-500 text-black flex items-center justify-center font-black italic text-[10px] rounded-r-lg">0${i+1}</span>
+                                <div class="space-y-4 pl-4">
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black uppercase opacity-30">Aadhar Number</label>
+                                        <input class="rail-input !p-3 text-xs tracking-[0.4em]" placeholder="XXXX XXXX XXXX">
+                                    </div>
+                                    <div class="grid grid-cols-12 gap-4">
+                                        <div class="col-span-12 space-y-1">
+                                            <input class="rail-input !p-3 text-xs uppercase" placeholder="NAME">
+                                        </div>
+                                        <div class="col-span-6">
+                                            <input class="rail-input !p-3 text-xs" placeholder="AGE">
+                                        </div>
+                                        <div class="col-span-6">
+                                            <select class="rail-input !p-3 text-xs appearance-none">
+                                                <option>MALE</option><option>FEMALE</option><option>TRANS</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+
+                        <div class="rail-card space-y-6 bg-yellow-500/5">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-[8px] font-black uppercase opacity-30">Coach</label>
+                                    <select class="rail-input !p-3 text-xs"><option>B1</option><option>S1</option><option>A1</option></select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[8px] font-black uppercase opacity-30">Compartment</label>
+                                    <select class="rail-input !p-3 text-xs"><option>1-8</option><option>9-16</option></select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[8px] font-black uppercase opacity-30">Preference</label>
+                                    <select class="rail-input !p-3 text-xs"><option>LOWER</option><option>SIDE LOWER</option><option>WINDOW</option></select>
+                                </div>
+                            </div>
+                            <button onclick="router.navigate('/payment')" class="rail-btn shadow-lg">Proceed</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPayment(app) {
+            app.innerHTML = `
+                <div class="space-y-12 animate-in slide-in-from-right duration-500">
+                    <h2 class="text-4xl font-black italic text-center">SECURE PAY</h2>
+                    <div class="rail-card space-y-8 !p-8 shadow-2xl">
+                        <div class="space-y-6">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase opacity-30">Cardholder Name</label>
+                                <input class="rail-input text-xs font-black uppercase" placeholder="HOLDER IDENTITY">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase opacity-30">Card Number</label>
+                                <input class="rail-input text-xs font-black tracking-[0.4em]" placeholder="0000 0000 0000 0000">
+                            </div>
+                            <div class="grid grid-cols-2 gap-8">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black uppercase opacity-30">Expiry</label>
+                                    <input class="rail-input text-xs font-black text-center" placeholder="MM/YY">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black uppercase opacity-30">CVV</label>
+                                    <input type="password" class="rail-input text-xs font-black text-center" placeholder="***">
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="router.navigate('/ticket')" class="rail-btn">Pay ₹${state.passengers * 300}</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTicket(app) {
+            app.innerHTML = `
+                <div class="space-y-10 text-center animate-in zoom-in duration-500">
+                    <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto border-2 border-green-500/40">
+                        <span class="text-green-500 text-3xl font-black">✓</span>
+                    </div>
+                    <div class="space-y-2">
+                        <h2 class="text-3xl font-black italic italic">DEPLOYMENT SUCCESSFUL</h2>
+                        <p class="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">Transmission ID: AK${Math.random().toString(36).substr(2,6).toUpperCase()}</p>
+                    </div>
+                    <div class="rail-card bg-yellow-500 text-black !p-8 shadow-[0_0_50px_rgba(255,215,0,0.3)]">
+                        <p class="text-[10px] font-black uppercase tracking-widest opacity-60">Expedition Ticket</p>
+                        <h3 class="text-3xl font-black italic uppercase my-4">${state.from.code} ➔ ${state.to.code}</h3>
+                        <div class="flex justify-between items-center text-[8px] font-black uppercase tracking-widest border-t border-black/10 pt-4 opacity-70">
+                            <span>REG-B1</span>
+                            <span>NODE-22</span>
+                            <span>${state.passengers} PAX</span>
+                        </div>
+                    </div>
+                    <button onclick="router.navigate('/')" class="text-[10px] font-black uppercase tracking-widest opacity-30 hover:opacity-100 transition-opacity">Return to Command Center</button>
+                </div>
+            `;
+        }
+
+        function renderProfile(app) {
+            app.innerHTML = `
+                 <div class="space-y-12 animate-in slide-in-from-right duration-500">
+                    <header class="flex flex-col items-center space-y-6 pt-10">
+                        <div class="w-24 h-24 rounded-full bg-yellow-500/10 border-2 border-yellow-500/20 flex items-center justify-center relative shadow-[0_0_40px_rgba(255,215,0,0.1)]">
+                            <span class="text-3xl">👤</span>
+                            <div class="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-4 border-black animate-pulse shadow-[0_0_15px_rgba(34,197,94,0.5)]"></div>
+                        </div>
+                        <div class="text-center">
+                            <h2 class="text-3xl font-black italic tracking-tighter">${state.user.name}</h2>
+                            <p class="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">Tier 1 Grid Operator</p>
+                        </div>
+                    </header>
+
+                    <div class="rail-card space-y-6">
+                        <div class="flex items-center gap-6 p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <span class="text-xl">📊</span>
+                            <div class="flex-1">
+                                <p class="text-[9px] font-bold opacity-30 uppercase tracking-widest">Load Metrics</p>
+                                <p class="text-sm font-black italic">8,421 EXECUTIONS</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6 p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <span class="text-xl">🔗</span>
+                            <div class="flex-1">
+                                <p class="text-[9px] font-bold opacity-30 uppercase tracking-widest">Node Path</p>
+                                <p class="text-sm font-black italic">SOUTH CIRCUIT GRID 4.2</p>
+                            </div>
+                        </div>
+                        <button onclick="router.navigate('/signup')" class="w-full py-5 border border-red-500/20 bg-red-500/5 rounded-2xl text-red-500 text-[10px] font-black uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">Decommission Protocol</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSignup(app) {
+            app.innerHTML = `
+                <div class="space-y-12 animate-in zoom-in duration-500">
+                    <header class="text-center">
+                        <h2 class="text-3xl font-black italic tracking-tighter">IDENTITY GRID</h2>
+                        <p class="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">Access Protocol Required</p>
+                    </header>
+
+                    <div class="bg-card p-1 rounded-2xl border border-white/5 flex gap-2 w-full max-w-xs mx-auto">
+                        ${['login', 'create', 'reset'].map(tab => `
+                            <button onclick="setAuthTab('${tab}')" class="flex-1 py-3 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all ${state.authTab === tab ? 'bg-yellow-500 text-black shadow-lg' : 'opacity-40'}">${tab}</button>
+                        `).join('')}
+                    </div>
+
+                    <div class="rail-card !p-8 space-y-8 max-w-xs mx-auto shadow-2xl shadow-black/80">
+                        <div class="space-y-6">
+                            <div class="space-y-2">
+                                <input class="rail-input text-xs font-black uppercase" placeholder="REGISTRY EMAIL">
+                            </div>
+                            ${state.authTab !== 'reset' ? `
+                                <div class="space-y-2">
+                                    <input type="password" class="rail-input text-xs font-black uppercase" placeholder="SECURITY KEY">
+                                </div>
+                            ` : ''}
+                        </div>
+                        <button onclick="router.navigate('/profile')" class="rail-btn">${state.authTab === 'login' ? 'Authorize' : state.authTab === 'create' ? 'Establish' : 'Retrieve'}</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Logic Handlers ---
+        window.swapHome = () => {
+             const temp = state.from;
+             state.from = state.to;
+             state.to = temp;
+             renderHome(document.getElementById('app'));
+        };
+
+        window.goToBooking = (id, name) => {
+            state.selectedTrain = { id, name };
+            router.navigate('/booking');
+        };
+
+        window.updatePaxCount = (val) => {
+            state.passengers = Math.max(1, Math.min(6, parseInt(val) || 1));
+            renderBooking(document.getElementById('app'));
+        };
+
+        window.setAuthTab = (tab) => {
+            state.authTab = tab;
+            renderSignup(document.getElementById('app'));
+        };
+
+        window.addEventListener('load', () => render());
+    </script>
+</body>
+</html>

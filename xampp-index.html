@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AK THEATERS | Premium Cinema Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@500;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #050505;
+            --clay-surface: #121212;
+            --accent: #FF4E00;
+            --gold: #FFC107;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: #E0E0E0;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Claymorphism Utilities */
+        .clay-card {
+            background: var(--clay-surface);
+            border-radius: 24px;
+            box-shadow: 
+                inset 2px 2px 5px rgba(255, 255, 255, 0.05),
+                inset -5px -5px 15px rgba(0, 0, 0, 0.5),
+                10px 10px 30px rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .clay-btn {
+            background: var(--clay-surface);
+            border-radius: 16px;
+            box-shadow: 
+                inset 2px 2px 4px rgba(255, 255, 255, 0.1),
+                inset -2px -2px 4px rgba(0, 0, 0, 0.5),
+                5px 5px 15px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.75rem;
+        }
+
+        .clay-btn:active {
+            box-shadow: 
+                inset 4px 4px 8px rgba(0, 0, 0, 0.6),
+                inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+            transform: scale(0.98);
+        }
+
+        .clay-pill {
+            background: var(--clay-surface);
+            border-radius: 999px;
+            box-shadow: 
+                inset 1px 1px 3px rgba(255, 255, 255, 0.05),
+                inset -2px -2px 5px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border);
+        }
+
+        .clay-btn-active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 
+                inset 2px 2px 4px rgba(255, 90, 20, 0.4),
+                inset -2px -2px 4px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(255, 78, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Custom Scroll */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .animate-float { animation: float 6s ease-in-out infinite; }
+
+        /* Carousel */
+        .hero-carousel {
+            height: 70vh;
+            perspective: 1000px;
+        }
+
+        /* Mobile Nav */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0px;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .seat-unit {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .seat-silver { background: #555; }
+        .seat-gold { background: #FFD700; }
+        .seat-platinum { background: #E5E4E2; }
+        .seat-sold { background: #222 !important; cursor: not-allowed; opacity: 0.3; }
+        .seat-selected { background: var(--accent) !important; box-shadow: 0 0 10px var(--accent); transform: scale(1.1); }
+
+    </style>
+</head>
+<body class="max-w-screen overflow-x-hidden pb-24">
+
+    <!-- NAV BAR -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass px-6 py-4 flex justify-between items-center max-w-7xl mx-auto rounded-b-3xl">
+        <div class="flex items-center gap-2">
+            <div class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center shadow-lg">
+                <i data-lucide="clapperboard" class="text-white w-6 h-6"></i>
+            </div>
+            <h1 class="text-xl font-outfit font-extrabold tracking-tighter text-white">AK THEATERS</h1>
+        </div>
+
+        <div class="hidden md:flex gap-4" id="desktop-nav">
+            <!-- Dynamic Nav Nodes -->
+        </div>
+
+        <div id="auth-status" class="flex gap-4">
+            <!-- User Info or Login -->
+        </div>
+    </nav>
+
+    <!-- CONTENT AREA -->
+    <main id="main-view" class="pt-24 min-h-screen animate-in fade-in duration-500">
+        <!-- SPA VIEWS INJECTED HERE -->
+    </main>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <div class="mobile-nav md:hidden px-4 pb-6">
+        <div class="glass py-4 px-8 rounded-full flex justify-between items-center shadow-2xl">
+            <button onclick="router.navigate('home')" class="nav-icon-btn text-accent">
+                <i data-lucide="home"></i>
+            </button>
+            <button onclick="router.navigate('movies')" class="nav-icon-btn opacity-50">
+                <i data-lucide="film"></i>
+            </button>
+            <button id="mobile-booking-btn" class="nav-icon-btn opacity-50">
+                <i data-lucide="ticket"></i>
+            </button>
+            <button onclick="router.navigate('profile')" class="nav-icon-btn opacity-50">
+                <i data-lucide="user"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- UX ENHANCEMENTS & HELPERS ---
+        const toast = (msg) => {
+            const t = document.createElement('div');
+            t.className = 'fixed top-24 left-1/2 -translate-x-1/2 clay-card px-8 py-4 bg-accent text-white z-[2000] font-black text-xs uppercase tracking-widest animate-float shadow-2xl';
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2500);
+        };
+
+        // --- CONFIG & STATE ---
+        const API_URL = '/api'; // Placeholder for XAMPP
+        let state = {
+            user: JSON.parse(localStorage.getItem('ak_user')) || null,
+            movies: [],
+            nowShowing: [],
+            upcoming: [],
+            currentMovie: null,
+            selectedShow: null,
+            selectedSeats: [],
+            bookingProgress: {
+                movie: null,
+                show: null,
+                seats: [],
+                payment: null
+            }
+        };
+
+        // --- AUTH LOGIC ---
+        function updateAuthUI() {
+            const DesktopNav = document.getElementById('desktop-nav');
+            const AuthStatus = document.getElementById('auth-status');
+            
+            lucide.createIcons();
+
+            let navItems = ['home', 'movies', 'help'];
+            if (state.user) {
+                navItems = ['home', 'movies', 'booking', 'profile', 'logout', 'help'];
+                AuthStatus.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold opacity-60">Hi, ${state.user.name}</span>
+                        <div onclick="router.navigate('profile')" class="w-10 h-10 clay-pill flex items-center justify-center cursor-pointer">
+                            <i data-lucide="user" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                `;
+            } else {
+                navItems = ['home', 'movies', 'login', 'help'];
+                AuthStatus.innerHTML = `
+                    <button onclick="router.navigate('login')" class="clay-btn px-6 py-2">Sign In</button>
+                `;
+            }
+
+            DesktopNav.innerHTML = navItems.map(item => `
+                <button onclick="${item === 'logout' ? 'handleLogout()' : `router.navigate('${item}')`}" 
+                        class="text-[10px] uppercase font-black tracking-widest px-4 py-2 hover:text-accent transition-colors ${item === 'booking' && state.bookingProgress.movie ? 'clay-btn-active' : ''}">
+                    ${item}
+                </button>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        function handleLogout() {
+            state.user = null;
+            localStorage.removeItem('ak_user');
+            router.navigate('home');
+            updateAuthUI();
+        }
+
+        // --- ROUTER ENGINE ---
+        const router = {
+            history: [],
+            navigate(view, params = {}) {
+                this.history.push({view, params});
+                console.log('Navigating to:', view, params);
+                
+                // Clear state for specific transitions
+                if (view === 'booking') {
+                    if (!state.bookingProgress.movie) {
+                        view = 'movies';
+                    }
+                }
+
+                this.render(view, params);
+                window.scrollTo(0, 0);
+                updateAuthUI();
+            },
+
+            async render(view, params) {
+                const main = document.getElementById('main-view');
+                main.innerHTML = `<div class="flex justify-center items-center h-64"><div class="animate-spin text-accent"><i data-lucide="loader-2"></i></div></div>`;
+                lucide.createIcons();
+
+                switch(view) {
+                    case 'home':
+                        renderHome(main);
+                        break;
+                    case 'movies':
+                        renderMovies(main);
+                        break;
+                    case 'show':
+                        renderShow(main, params.id);
+                        break;
+                    case 'seat':
+                        renderSeat(main, params.id);
+                        break;
+                    case 'payment':
+                        renderPayment(main);
+                        break;
+                    case 'ticket':
+                        renderTicket(main, params.id);
+                        break;
+                    case 'profile':
+                        renderProfile(main);
+                        break;
+                    case 'login':
+                        renderLogin(main);
+                        break;
+                    case 'actor':
+                        renderActor(main, params.id);
+                        break;
+                    default:
+                        renderHome(main);
+                }
+            }
+        };
+
+        // --- VIEW RENDERERS ---
+
+        async function renderHome(target) {
+            target.innerHTML = `<div class="p-20 text-center animate-pulse uppercase font-black opacity-20 tracking-[1em]">Synchronizing Archive...</div>`;
+            
+            try {
+                const res = await fetch(`${API_URL}/movies?status=now_showing&limit=20`);
+                const nowShowing = await res.json();
+                
+                const heroMovies = nowShowing.slice(0, 5);
+
+                target.innerHTML = `
+                    <!-- HERO CAROUSEL -->
+                    <section class="hero-carousel relative overflow-hidden mb-12">
+                        <div id="carousel-track" class="flex h-full transition-transform duration-1000">
+                            ${heroMovies.map((m, i) => `
+                                <div class="min-w-full relative h-full group">
+                                    <img src="${m.banner}" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                                    <div class="absolute bottom-20 left-12 space-y-4">
+                                        <span class="clay-pill px-4 py-1 text-[8px] font-black uppercase tracking-widest text-accent">AK THEATERS PRESENTS</span>
+                                        <h2 class="text-6xl font-outfit font-black tracking-tighter uppercase italic">${m.title}</h2>
+                                        <div class="flex gap-4 items-center">
+                                            <div class="clay-pill px-4 py-1 text-xs font-bold text-yellow-500 flex items-center gap-1">
+                                                <i data-lucide="star" class="w-3 h-3 fill-yellow-500"></i> ${m.rating}
+                                            </div>
+                                            <span class="opacity-40 text-xs font-black uppercase tracking-widest">${m.genre}</span>
+                                            <span class="opacity-40 text-xs font-black uppercase tracking-widest">${m.language}</span>
+                                        </div>
+                                        <div class="flex gap-4 pt-4">
+                                            <button onclick="router.navigate('show', {id: ${m.id}})" class="clay-btn clay-btn-active px-8 py-3">Book Now</button>
+                                            <button onclick="playTrailer('${m.trailer_url}')" class="clay-btn px-8 py-3 bg-white/10">Watch Trailer</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </section>
+
+                    <!-- NOW SHOWING -->
+                    <section class="max-w-7xl mx-auto px-6 mb-20 animate-in slide-in-from-bottom duration-700">
+                        <div class="flex justify-between items-center mb-10">
+                            <div class="space-y-1">
+                                <h3 class="text-3xl font-outfit font-black tracking-tight">Hot Hits Right Now</h3>
+                                <p class="text-xs opacity-40 uppercase tracking-widest">Selected curated shows</p>
+                            </div>
+                            <button onclick="router.navigate('movies')" class="text-accent font-bold text-sm">View All ➔</button>
+                        </div>
+
+                        <div class="flex gap-6 overflow-x-auto no-scrollbar pb-10 px-2" id="now-showing-row">
+                            ${nowShowing.map(m => `
+                                <div onclick="router.navigate('show', {id: ${m.id}})" class="min-w-[200px] clay-card p-2 group cursor-pointer hover:-translate-y-2 transition-transform bg-white/[0.02]">
+                                    <img src="${m.poster}" class="rounded-2xl w-full aspect-[2/3] object-cover mb-4">
+                                    <div class="px-2 pb-2">
+                                        <h4 class="font-black italic text-xs mb-1 truncate uppercase">${m.title}</h4>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-[10px] opacity-40 capitalize">${m.genre} • ${m.language}</span>
+                                            <span class="text-[10px] text-yellow-500 font-bold">★ ${m.rating}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </section>
+                `;
+                
+                lucide.createIcons();
+                initCarousel(heroMovies.length);
+
+            } catch (err) {
+                target.innerHTML = `<div class="p-20 text-center text-red-500 uppercase font-black">Archive Sync Failed</div>`;
+            }
+        }
+
+        async function renderMovies(target) {
+            target.innerHTML = `<div class="p-20 text-center animate-pulse uppercase font-black opacity-20 tracking-[1em]">Scanning Cinematic Grid...</div>`;
+            
+            try {
+                const res = await fetch(`${API_URL}/movies?status=now_showing&limit=200`);
+                const movies = await res.json();
+
+                target.innerHTML = `
+                    <section class="max-w-7xl mx-auto px-6 pt-10">
+                        <!-- CLAY FILTER BAR -->
+                        <div class="clay-card p-6 flex flex-col md:flex-row gap-6 items-center justify-between mb-16">
+                            <div class="relative w-full md:w-96">
+                                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30"></i>
+                                <input id="movie-search" type="text" placeholder="Search 200+ Movies..." class="w-full bg-black/40 border border-white/5 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-accent transition-colors">
+                            </div>
+                            <div class="flex gap-3 overflow-x-auto no-scrollbar w-full md:w-auto">
+                                ${['All', 'Action', 'Drama', 'Comedy', 'Sci-Fi', 'Thriller'].map((g, i) => `
+                                    <button class="clay-pill px-6 py-2 text-[10px] font-black uppercase tracking-widest ${i===0 ? 'clay-btn-active' : 'opacity-60'}">
+                                        ${g}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- MOVIE GRID (200+ CARDS) -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-32">
+                            ${movies.map(m => `
+                                 <div onclick="router.navigate('show', {id: ${m.id}})" class="clay-card p-2 group cursor-pointer hover:border-accent/40 bg-white/[0.01]">
+                                    <div class="relative overflow-hidden rounded-2xl aspect-[2/3]">
+                                        <img src="${m.poster}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                        <div class="absolute top-2 right-2 clay-pill p-2 bg-black/60 backdrop-blur-md">
+                                            <i data-lucide="heart" class="w-3 h-3"></i>
+                                        </div>
+                                    </div>
+                                    <div class="p-3">
+                                        <h4 class="font-black italic text-[11px] truncate uppercase">${m.title}</h4>
+                                        <div class="flex justify-between mt-1 opacity-40 text-[8px] font-black uppercase tracking-tighter">
+                                            <span>${m.genre} / ${m.language}</span>
+                                            <span class="text-accent">★ ${m.rating}</span>
+                                        </div>
+                                    </div>
+                                 </div>
+                            `).join('')}
+                        </div>
+                    </section>
+                `;
+                lucide.createIcons();
+
+                // Search Logic
+                const searchInput = document.getElementById('movie-search');
+                searchInput.oninput = (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const filterCards = document.querySelectorAll('.grid > div');
+                    filterCards.forEach(card => {
+                        const title = card.querySelector('h4').innerText.toLowerCase();
+                        card.style.display = title.includes(term) ? 'block' : 'none';
+                    });
+                };
+            } catch (err) {
+                target.innerHTML = `<div class="p-20 text-center text-red-500 uppercase font-black">Archive Access Denied</div>`;
+            }
+        }
+
+        function playTrailer(url) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-[3000] glass flex items-center justify-center p-4 md:p-20';
+            modal.innerHTML = `
+                <div class="relative w-full h-full clay-card overflow-hidden">
+                    <button onclick="this.parentElement.parentElement.remove()" class="absolute top-6 right-6 z-10 clay-pill p-4 bg-accent text-white shadow-2xl">
+                        <i data-lucide="x"></i>
+                    </button>
+                    <iframe class="w-full h-full" src="${url}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            lucide.createIcons();
+        }
+
+        function initCarousel(length) {
+            let curr = 0;
+            const interval = setInterval(() => {
+                const track = document.getElementById('carousel-track');
+                if (!track) return clearInterval(interval);
+                curr = (curr + 1) % length;
+                track.style.transform = `translateX(-${curr * 100}%)`;
+            }, 6000);
+        }
+
+        async function renderShow(target, id) {
+            target.innerHTML = `<div class="p-20 text-center animate-pulse uppercase font-black opacity-20 tracking-[1em]">Retrieving Cinematic Dossier...</div>`;
+            
+            try {
+                const res = await fetch(`${API_URL}/movies/details?id=${id}`);
+                const movie = await res.json();
+
+                target.innerHTML = `
+                    <div class="relative pt-10">
+                        <div class="absolute top-0 left-0 right-0 h-[50vh] opacity-20 blur-3xl -z-10" style="background: radial-gradient(circle at 50% 0%, var(--accent), transparent);"></div>
+                        
+                        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-12 gap-12 mb-20 animate-in zoom-in-95 duration-700">
+                            <div class="md:col-span-4 lg:col-span-3">
+                                <div class="clay-card p-2 shadow-2xl animate-float">
+                                    <img src="${movie.poster}" class="w-full rounded-2xl aspect-[2/3] object-cover">
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-8 lg:col-span-9 space-y-10">
+                                <div class="space-y-4">
+                                    <div class="flex gap-4">
+                                        <span class="text-accent font-black text-xs tracking-widest uppercase">Now Playing</span>
+                                        <span class="opacity-30 text-xs font-black uppercase tracking-widest">${movie.language} • ${movie.duration}m • ${movie.genre}</span>
+                                    </div>
+                                    <h1 class="text-6xl font-outfit font-black tracking-tighter uppercase italic">${movie.title}</h1>
+                                    <div class="flex gap-6 items-center">
+                                        <div class="flex items-center gap-1 text-yellow-500 font-bold">
+                                            <i data-lucide="star" class="w-5 h-5 fill-yellow-500"></i>
+                                            <span class="text-xl">${movie.rating}</span>
+                                            <span class="text-xs opacity-40 ml-2">(Verified Audience)</span>
+                                        </div>
+                                        <button class="clay-pill px-6 py-2 text-[10px] font-black uppercase tracking-widest border-accent/20 border">Rate Now</button>
+                                    </div>
+                                </div>
+
+                                <p class="text-lg leading-relaxed opacity-60 font-light max-w-3xl">
+                                    ${movie.description}
+                                </p>
+
+                                <div class="flex gap-6 pt-6">
+                                    <button onclick="scrollToBooking()" class="clay-btn clay-btn-active px-12 py-4">Book Show</button>
+                                    <button onclick="playTrailer('${movie.trailer_url}')" class="clay-btn px-12 py-4"><i data-lucide="play" class="mr-2"></i> Trailer</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CAST & CREW -->
+                        <section class="max-w-7xl mx-auto px-6 py-20 border-t border-white/5 space-y-16">
+                            <div>
+                                <h3 class="text-2xl font-black mb-10 tracking-tight uppercase italic">Main Operatives (Cast)</h3>
+                                <div class="flex gap-8 overflow-x-auto no-scrollbar pb-10">
+                                    ${movie.cast.map(c => `
+                                        <div onclick="router.navigate('actor', {id: ${c.id}})" class="min-w-[120px] text-center space-y-3 cursor-pointer group">
+                                            <div class="w-24 h-24 mx-auto rounded-full clay-card p-1 group-hover:border-accent/40 transition-all overflow-hidden">
+                                                <img src="${c.image}" class="w-full h-full rounded-full object-cover">
+                                            </div>
+                                            <div>
+                                                <p class="font-black text-[10px] uppercase truncate">${c.name}</p>
+                                                <p class="text-[8px] opacity-40 uppercase tracking-tighter">${c.character_name}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-2xl font-black mb-8 tracking-tight uppercase italic">Command Center (Crew)</h3>
+                                <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                                    ${movie.crew.map(cr => `
+                                        <div class="clay-card p-6 flex justify-between items-center bg-white/[0.02]">
+                                             <div class="space-y-1">
+                                                <p class="text-[9px] font-black uppercase text-accent tracking-tighter">${cr.role}</p>
+                                                <p class="font-bold text-sm truncate max-w-[100px]">${cr.name}</p>
+                                             </div>
+                                             <i data-lucide="award" class="w-4 h-4 opacity-20"></i>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </section>
+                        
+                        <!-- BOOKING MODULE -->
+                        <section id="booking-module" class="max-w-7xl mx-auto px-6 py-32 border-t border-white/5 bg-accent/[0.02]">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 mb-16">
+                                <div class="space-y-4">
+                                    <h3 class="text-4xl font-black italic tracking-tighter uppercase">Select Expedition</h3>
+                                    <div class="flex gap-4 overflow-x-auto no-scrollbar pb-4 max-w-full">
+                                        ${[0, 1, 2, 3, 4].map(i => {
+                                            const d = new Date(); d.setDate(d.getDate() + i);
+                                            return `<button class="clay-btn flex flex-col p-4 min-w-[80px] ${i===0?'clay-btn-active':''}">
+                                                <span class="text-[8px] opacity-60 uppercase">${d.toLocaleDateString('en-IN', {weekday: 'short'})}</span>
+                                                <span class="text-xl font-black">${d.getDate()}</span>
+                                            </button>`;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid gap-8" id="showtimes-container">
+                                ${['AK CINEMAS - GUNTUR', 'AK IMAX - HYDERABAD', 'AK MULTIPLEX'].map((theater, i) => `
+                                    <div class="clay-card p-10 flex flex-col lg:flex-row justify-between items-center gap-12 bg-black/40">
+                                        <div class="flex gap-6 items-center">
+                                            <div class="w-16 h-16 clay-pill flex items-center justify-center text-accent">
+                                                <i data-lucide="map-pin"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-2xl font-black italic uppercase">${theater}</h4>
+                                                <p class="text-xs opacity-40 uppercase tracking-widest">Premium Laser Projection • Atmos 7.1</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-4 flex-wrap justify-center">
+                                            ${['11:00 AM', '02:45 PM', '06:15 PM', '09:30 PM'].map(time => `
+                                                <button onclick="router.navigate('seat', {id: '${time}'})" class="clay-pill px-8 py-3 text-xs font-black border border-white/10 hover:border-accent hover:text-accent transition-all">
+                                                    ${time}
+                                                </button>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </section>
+                    </div>
+                `;
+                lucide.createIcons();
+            } catch (err) {
+                target.innerHTML = `<div class="p-20 text-center text-red-500 uppercase font-black">Archive Access Denied</div>`;
+            }
+        }
+
+        function scrollToBooking() {
+            document.getElementById('booking-module').scrollIntoView({behavior: 'smooth'});
+        }
+
+        async function renderSeat(target, show_id) {
+            target.innerHTML = `
+                <div class="max-w-7xl mx-auto px-6 pt-10 pb-32">
+                    <div class="text-center mb-16">
+                        <div class="w-full h-2 bg-gradient-to-r from-transparent via-accent/30 to-transparent rounded-full max-w-2xl mx-auto mb-4"></div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.5em] opacity-40">CINEMATIC SCREEN</p>
+                    </div>
+
+                    <!-- SEAT MAP -->
+                    <div class="flex flex-col items-center gap-2 mb-20 overflow-x-auto py-10 no-scrollbar">
+                        ${['A','B','C','D','E','F','G'].map(row => `
+                            <div class="flex items-center gap-4">
+                                <span class="text-[10px] font-black w-4 opacity-30">${row}</span>
+                                <div class="flex gap-1">
+                                    ${Array.from({length: 18}).map((_, col) => {
+                                        const seatId = `${row}${col+1}`;
+                                        const type = row < 'D' ? 'Silver' : row < 'G' ? 'Gold' : 'Platinum';
+                                        return `<div id="seat-${seatId}" 
+                                                    onclick="toggleSeat('${seatId}', '${type}')" 
+                                                    class="seat-unit seat-${type.toLowerCase()}"></div>`;
+                                    }).join('')}
+                                </div>
+                                <span class="text-[10px] font-black w-4 opacity-30">${row}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- LEGEND -->
+                    <div class="clay-card p-6 flex flex-wrap justify-center gap-10 max-w-4xl mx-auto mb-20 bg-black/40">
+                         <div class="flex items-center gap-3">
+                            <div class="seat-unit seat-silver m-0"></div>
+                            <span class="text-[9px] font-black uppercase">Silver (₹150)</span>
+                         </div>
+                         <div class="flex items-center gap-3">
+                            <div class="seat-unit seat-gold m-0"></div>
+                            <span class="text-[9px] font-black uppercase">Gold (₹250)</span>
+                         </div>
+                         <div class="flex items-center gap-3">
+                            <div class="seat-unit seat-platinum m-0"></div>
+                            <span class="text-[9px] font-black uppercase">Platinum (₹400)</span>
+                         </div>
+                         <div class="flex items-center gap-3">
+                            <div class="seat-unit seat-selected m-0"></div>
+                            <span class="text-[9px] font-black uppercase">Selected</span>
+                         </div>
+                    </div>
+
+                    <!-- CHECKOUT BAR -->
+                    <div class="fixed bottom-[84px] left-0 right-0 z-50 px-6">
+                        <div class="max-w-4xl mx-auto clay-card p-6 flex justify-between items-center bg-black/80 backdrop-blur-xl border-accent/20">
+                            <div>
+                                <p id="selected-seats-display" class="text-xs font-black uppercase text-accent">No Seats Selected</p>
+                                <h4 id="total-price-display" class="text-3xl font-outfit font-black tracking-tighter">₹0.00</h4>
+                            </div>
+                            <button onclick="goToPayment()" class="clay-btn clay-btn-active px-16 py-4">Proceed ➔</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            state.selectedSeats = [];
+            lucide.createIcons();
+        }
+
+        function toggleSeat(id, type) {
+            const el = document.getElementById(`seat-${id}`);
+            if (state.selectedSeats.includes(id)) {
+                state.selectedSeats = state.selectedSeats.filter(s => s !== id);
+                el.classList.remove('seat-selected');
+            } else {
+                state.selectedSeats.push(id);
+                el.classList.add('seat-selected');
+            }
+            updateSeatUI();
+        }
+
+        function updateSeatUI() {
+            const display = document.getElementById('selected-seats-display');
+            const priceEl = document.getElementById('total-price-display');
+            
+            if (state.selectedSeats.length === 0) {
+                display.innerText = 'No Seats Selected';
+                priceEl.innerText = '₹0.00';
+            } else {
+                display.innerText = state.selectedSeats.join(', ');
+                let total = state.selectedSeats.length * 250; // Simplified
+                priceEl.innerText = `₹${total}.00`;
+                state.bookingProgress.total = total;
+            }
+        }
+
+        function goToPayment() {
+            if (state.selectedSeats.length === 0) return alert('Select seats to proceed.');
+            state.bookingProgress.seats = state.selectedSeats;
+            router.navigate('payment');
+        }
+
+        async function renderPayment(target) {
+            target.innerHTML = `
+                <div class="max-w-lg mx-auto px-6 pt-20">
+                    <div class="clay-card p-10 space-y-10 shadow-3xl bg-black/60 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-10 opacity-5 -mr-10 -mt-10">
+                            <i data-lucide="credit-card" class="w-64 h-64"></i>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h2 class="text-3xl font-black italic tracking-tighter">SECURE SETTLEMENT</h2>
+                            <p class="text-[9px] font-black uppercase opacity-40">Amount Due: ₹${state.bookingProgress.total || 0}</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="space-y-2">
+                                <label class="text-[9px] label-clay uppercase font-black opacity-30">Cardholder Identity</label>
+                                <input type="text" placeholder="FULL NAME" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none focus:border-accent">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[9px] label-clay uppercase font-black opacity-30">Vault Number (Card)</label>
+                                <input type="text" placeholder="XXXX XXXX XXXX XXXX" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none focus:border-accent tracking-widest">
+                            </div>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="text-[9px] label-clay uppercase font-black opacity-30">Expiry</label>
+                                    <input type="text" placeholder="MM/YY" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none text-center">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[9px] label-clay uppercase font-black opacity-30">Secret Code (CVV)</label>
+                                    <input type="password" placeholder="***" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none text-center">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="confirmBooking()" class="clay-btn clay-btn-active w-full py-5 text-lg">Pay ₹${state.bookingProgress.total || 0}</button>
+                        
+                        <div class="text-center">
+                            <button onclick="router.navigate('seat')" class="text-[9px] font-black uppercase opacity-30 underline">Modify Seating</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        async function confirmBooking() {
+            // Simplified API call simulation
+            const pnr = 'AK' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            router.navigate('ticket', {id: pnr});
+        }
+
+        async function renderTicket(target, pnr) {
+            target.innerHTML = `
+                <div class="max-w-lg mx-auto px-6 pt-20">
+                     <div class="clay-card bg-accent text-white p-1 pb-4 relative">
+                        <div class="bg-black rounded-[22px] p-8 space-y-10">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h2 class="text-4xl font-outfit font-black tracking-tighter">BOARDING PASS</h2>
+                                    <p class="text-[10px] font-black uppercase opacity-40">AK THEATERS DEPLOYMENT</p>
+                                </div>
+                                <i data-lucide="clapperboard" class="w-8 h-8 text-accent"></i>
+                            </div>
+
+                            <div class="space-y-4">
+                                <p class="text-[9px] font-black uppercase opacity-30">Subject Movie</p>
+                                <h3 class="text-2xl font-black italic">CINEMATIC SPECTACLE VOL. 1</h3>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-10">
+                                <div>
+                                    <p class="text-[9px] font-black uppercase opacity-30">Hall Access</p>
+                                    <p class="font-bold">LASER SCREEN 01</p>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] font-black uppercase opacity-30">Seat Manifest</p>
+                                    <p class="font-bold">${state.bookingProgress.seats.join(', ') || 'A1, A2'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] font-black uppercase opacity-30">Protocol Date</p>
+                                    <p class="font-bold">18 OCT 2026</p>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] font-black uppercase opacity-30">Time Window</p>
+                                    <p class="font-bold">09:30 PM (IST)</p>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-dashed border-white/10 pt-10 flex flex-col items-center gap-6">
+                                <div class="w-40 h-40 bg-white rounded-2xl p-4">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${pnr}" class="w-full h-full">
+                                </div>
+                                <p class="text-2xl font-outfit font-black tracking-[0.5em] opacity-40">${pnr}</p>
+                            </div>
+                        </div>
+                     </div>
+
+                     <div class="flex gap-4 mt-10">
+                        <button onclick="window.print()" class="clay-btn flex-1 py-4">Download PDF</button>
+                        <button onclick="router.navigate('home')" class="clay-btn flex-1 py-4 clay-btn-active">Home Base</button>
+                     </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        async function renderProfile(target) {
+            target.innerHTML = `
+                <section class="max-w-4xl mx-auto px-6 pt-10">
+                    <div class="flex items-center gap-8 mb-16">
+                         <div class="w-32 h-32 clay-card p-1 rounded-full relative overflow-hidden">
+                            <img src="https://picsum.photos/seed/profile/400/400" class="w-full h-full rounded-full object-cover">
+                         </div>
+                         <div class="space-y-2">
+                             <h2 class="text-4xl font-outfit font-black tracking-tight">${state.user?.name || 'COMMANDER SEVEN'}</h2>
+                             <p class="text-xs opacity-40 uppercase tracking-widest">Primary Access Node ID: 48291</p>
+                             <div class="flex gap-2">
+                                <span class="clay-pill px-4 py-1 text-[8px] font-black uppercase bg-accent/20 border-accent/20 text-accent">GOLD TIER</span>
+                                <span class="clay-pill px-4 py-1 text-[8px] font-black uppercase">GRID VERIFIED</span>
+                             </div>
+                         </div>
+                    </div>
+
+                    <div class="flex gap-4 border-b border-white/5 mb-10 overflow-x-auto no-scrollbar">
+                         ${['ACTIVE_LOGS', 'HISTORY', 'SECURITY', 'NOTIFICATIONS'].map((t, i) => `
+                            <button class="pb-4 px-4 text-[10px] font-black uppercase tracking-widest ${i===0? 'text-accent border-b-2 border-accent' : 'opacity-30'}">${t}</button>
+                         `).join('')}
+                    </div>
+
+                    <div class="space-y-6">
+                        ${[1,2].map(i => `
+                            <div class="clay-card p-6 flex justify-between items-center bg-white/[0.02]">
+                                <div class="flex gap-6 items-center">
+                                     <div class="w-16 h-20 clay-card overflow-hidden">
+                                        <img src="https://picsum.photos/seed/m${i}/100/150" class="w-full h-full object-cover">
+                                     </div>
+                                     <div>
+                                        <h4 class="font-bold">Movie Title ${i}</h4>
+                                        <p class="text-[10px] opacity-40 uppercase">AK Cinema Guntur • 18 Oct</p>
+                                     </div>
+                                </div>
+                                <button class="clay-btn px-6 py-2">Details</button>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="mt-20 clay-card bg-white/[0.01] p-10 border-white/5 space-y-8">
+                        <h3 class="text-xl font-bold italic">Node Settings</h3>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="space-y-2">
+                                <label class="text-[9px] font-black uppercase opacity-30">Identity Name</label>
+                                <input class="w-full bg-black/40 border border-white/5 rounded-xl p-3 outline-none" value="${state.user?.name || ''}">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[9px] font-black uppercase opacity-30">Transmission Email</label>
+                                <input class="w-full bg-black/40 border border-white/5 rounded-xl p-3 outline-none" value="${state.user?.email || ''}">
+                            </div>
+                        </div>
+                        <button class="clay-btn clay-btn-active px-10 py-3">Commit Changes</button>
+                    </div>
+                </section>
+            `;
+            lucide.createIcons();
+        }
+
+        async function renderLogin(main) {
+            main.innerHTML = `
+                <div class="max-w-lg mx-auto px-6 py-20 animate-float">
+                    <div class="clay-card p-10 space-y-10 shadow-3xl bg-black/80">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-4xl font-outfit font-black tracking-tighter italic">IDENTITY GRID</h2>
+                            <p class="text-[9px] font-black uppercase opacity-40 tracking-[0.4em]">Establish Access Protocol</p>
+                        </div>
+
+                        <div class="flex bg-black/40 p-1 rounded-2xl border border-white/5">
+                            <button id="tab-login" onclick="toggleAuth('login')" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest bg-accent text-white rounded-xl">Login</button>
+                            <button id="tab-signup" onclick="toggleAuth('signup')" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest opacity-40">Signup</button>
+                        </div>
+
+                        <div id="auth-form-container" class="space-y-6">
+                            <input type="email" id="auth-email" placeholder="Grid Email Address" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none focus:border-accent">
+                            <input type="password" id="auth-pass" placeholder="Security Key" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none focus:border-accent">
+                            <button onclick="handleAuthSubmit()" class="clay-btn clay-btn-active w-full py-5 text-lg">Initialize</button>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="text-[10px] opacity-40 uppercase">Forgot Access Key? <span class="text-accent cursor-pointer">Protocol Reset</span></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleAuth(type) {
+            const btnLogin = document.getElementById('tab-login');
+            const btnSignup = document.getElementById('tab-signup');
+            const container = document.getElementById('auth-form-container');
+
+            if (type === 'signup') {
+                btnSignup.className = "flex-1 py-3 text-[10px] font-black uppercase tracking-widest bg-accent text-white rounded-xl";
+                btnLogin.className = "flex-1 py-3 text-[10px] font-black uppercase tracking-widest opacity-40";
+                container.innerHTML = `
+                    <input type="text" id="auth-name" placeholder="Full Identity Name" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none">
+                    <input type="email" id="auth-email" placeholder="Grid Email Address" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none">
+                    <input type="tel" id="auth-phone" placeholder="Relay Phone" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none">
+                    <input type="password" id="auth-pass" placeholder="Establish Security Key" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none">
+                    <button onclick="handleAuthSubmit('signup')" class="clay-btn clay-btn-active w-full py-5 text-lg">Establish Identity</button>
+                `;
+            } else {
+                btnLogin.className = "flex-1 py-3 text-[10px] font-black uppercase tracking-widest bg-accent text-white rounded-xl";
+                btnSignup.className = "flex-1 py-3 text-[10px] font-black uppercase tracking-widest opacity-40";
+                container.innerHTML = `
+                    <input type="email" id="auth-email" placeholder="Grid Email Address" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none">
+                    <input type="password" id="auth-pass" placeholder="Security Key" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 outline-none">
+                    <button onclick="handleAuthSubmit('login')" class="clay-btn clay-btn-active w-full py-5 text-lg">Authorize</button>
+                `;
+            }
+        }
+
+        function handleAuthSubmit(type) {
+            const name = document.getElementById('auth-name')?.value;
+            const email = document.getElementById('auth-email').value;
+            
+            state.user = {
+                name: name || 'Identity Confirmed',
+                email: email,
+                id: 1,
+                role: 'user'
+            };
+            localStorage.setItem('ak_user', JSON.stringify(state.user));
+            router.navigate('home');
+        }
+
+        async function renderActor(target, id) {
+            target.innerHTML = `
+                <div class="max-w-7xl mx-auto px-6 py-20 space-y-20">
+                    <div class="flex flex-col md:flex-row gap-16 items-center md:items-start text-center md:text-left">
+                        <div class="w-64 h-64 clay-card p-1 rounded-[40px] shadow-3xl animate-float">
+                            <img src="https://picsum.photos/seed/actor${id}/400/400" class="w-full h-full rounded-[40px] object-cover">
+                        </div>
+                        <div class="space-y-6">
+                            <h2 class="text-6xl font-outfit font-black tracking-tighter">PRABHAS VARMA</h2>
+                            <p class="text-lg opacity-60 font-light max-w-2xl">
+                                An acclaimed lead operative in the cinematic grid, known for massive blockbusters and high-performance theatrical deployments.
+                            </p>
+                            <div class="flex gap-4 justify-center md:justify-start">
+                                <div class="clay-card px-8 py-4 text-center">
+                                    <p class="text-accent font-black text-xl">150M+</p>
+                                    <p class="text-[9px] opacity-40 uppercase">Total Accesses</p>
+                                </div>
+                                <div class="clay-card px-8 py-4 text-center">
+                                    <p class="text-accent font-black text-xl">28</p>
+                                    <p class="text-[9px] opacity-40 uppercase">Grid Projects</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-2xl font-black mb-10 tracking-tight">Known For</h3>
+                        <div class="flex gap-8 overflow-x-auto no-scrollbar pb-10">
+                            ${[1,2,3,4,5].map(i => `
+                                <div onclick="router.navigate('show', {id: ${i}})" class="min-w-[180px] clay-card p-2 cursor-pointer hover:border-accent">
+                                    <img src="https://picsum.photos/seed/movie${i}/300/450" class="w-full rounded-2xl aspect-[2/3] object-cover">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // --- INITIALIZE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            router.navigate('home');
+        });
+
+    </script>
+</body>
+</html>

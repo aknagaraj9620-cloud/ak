@@ -1,0 +1,104 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User metadata and settings.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "name"]
+    },
+    "Movie": {
+      "title": "Movie Details",
+      "description": "Cinematic data for the theater grid.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "poster": { "type": "string" },
+        "banner": { "type": "string" },
+        "rating": { "type": "number" },
+        "genre": { "type": "string" },
+        "language": { "type": "string" },
+        "duration": { "type": "number" },
+        "description": { "type": "string" },
+        "trailerUrl": { "type": "string", "format": "uri" },
+        "status": { "type": "string", "enum": ["now_showing", "coming_soon", "archived"] }
+      },
+      "required": ["title", "poster", "status"]
+    },
+    "Show": {
+      "title": "Theatrical Show",
+      "description": "A specific time and place for a movie screening.",
+      "type": "object",
+      "properties": {
+        "movieId": { "type": "string" },
+        "theaterName": { "type": "string" },
+        "hallName": { "type": "string" },
+        "showTime": { "type": "string" },
+        "showDate": { "type": "string", "format": "date" },
+        "basePrice": { "type": "number" }
+      },
+      "required": ["movieId", "theaterName", "showTime", "showDate"]
+    },
+    "Seat": {
+      "title": "Theater Seat",
+      "description": "Seating state for a specific show.",
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "type": { "type": "string", "enum": ["Silver", "Gold", "Platinum"] },
+        "status": { "type": "string", "enum": ["available", "booked", "locked"] },
+        "lockedBy": { "type": "string" },
+        "lockedUntil": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["label", "status"]
+    },
+    "Booking": {
+      "title": "User Booking",
+      "description": "Finalized ticket reservation.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "showId": { "type": "string" },
+        "pnr": { "type": "string" },
+        "seats": { "type": "array", "items": { "type": "string" } },
+        "totalPrice": { "type": "number" },
+        "movieTitle": { "type": "string" },
+        "showTime": { "type": "string" },
+        "showDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["confirmed", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "showId", "pnr", "seats", "totalPrice"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Private user profiles."
+    },
+    "movies/{movieId}": {
+      "schema": "Movie",
+      "description": "Public movie archive."
+    },
+    "shows/{showId}": {
+      "schema": "Show",
+      "description": "Screening schedules."
+    },
+    "shows/{showId}/seats/{seatId}": {
+      "schema": "Seat",
+      "description": "Live seating status for a specific show."
+    },
+    "bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Immutable booking records."
+    }
+  }
+}
